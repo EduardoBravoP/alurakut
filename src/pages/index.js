@@ -113,7 +113,7 @@ export default function Home() {
                 return (
                   <li key={itemAtual.id}>
                     <a href={`/communities/${itemAtual.id}`}>
-                      <img src={itemAtual.imageUrl} />
+                      <img src={`https://picsum.photos/102/102/?${itemAtual.id}`} />
                       <span>{itemAtual.title}</span>
                     </a>
                   </li>
