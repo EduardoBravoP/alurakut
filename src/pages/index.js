@@ -5,7 +5,7 @@ import Box from '../components/Box'
 import { AlurakutMenu, AlurakutProfileSidebarMenuDefault, OrkutNostalgicIconSet } from '../lib/AlurakutCommons'
 import Link from 'next/link'
 import { ProfileRelationsBoxWrapper } from '../components/ProfileRelations'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 function ProfileSidebar({ githubUser }) {
   return (
@@ -33,8 +33,41 @@ function ProfileSidebar({ githubUser }) {
   )
 }
 
+function ProfileRelationsBox({ title, items }) {
+  return (
+    <ProfileRelationsBoxWrapper>
+      <h2 className="smallTitle">
+        {title} ({items.length})
+      </h2>
+      <ul>
+        {/* {seguidores.map((itemAtual) => {
+          return (
+            <li key={itemAtual}>
+              <a href={`https://github.com/${itemAtual}.png`}>
+                <img src={itemAtual.image} />
+                <span>{itemAtual.title}</span>
+              </a>
+            </li>
+          )
+        })} */}
+      </ul>
+    </ProfileRelationsBoxWrapper>
+  )
+}
+
 export default function Home() {
   const [communities, setCommunities] = useState([])
+  const [seguidores, setSeguidores] = useState([]);
+
+  useEffect(function () {
+    fetch('https://api.github.com/users/eduardobravop/followers')
+      .then(function (respostaDoServidor) {
+        return respostaDoServidor.json();
+      })
+      .then(function (respostaCompleta) {
+        setSeguidores(respostaCompleta);
+      })
+  }, [])
 
   const githubUser = 'eduardobravop'
   const pessoasFavoritas = [
@@ -104,6 +137,7 @@ export default function Home() {
         </div>
 
         <div className="profileRelations" style={{ gridArea: 'profileRelations' }}>
+          <ProfileRelationsBox title="Seguidores" items={seguidores} />
           <ProfileRelationsBoxWrapper>
             <h2 className="smallTitle">
               Comunidades ({communities.length})
