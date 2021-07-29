@@ -59,7 +59,7 @@ export default function Home() {
   const [communities, setCommunities] = useState([])
   const [seguidores, setSeguidores] = useState([]);
 
-  useEffect(function () {
+  useEffect(async () => {
     fetch('https://api.github.com/users/eduardobravop/followers')
       .then(function (respostaDoServidor) {
         return respostaDoServidor.json();
@@ -67,6 +67,30 @@ export default function Home() {
       .then(function (respostaCompleta) {
         setSeguidores(respostaCompleta);
       })
+
+
+    let response = await fetch('https://graphql.datocms.com/', {
+      method: 'POST',
+      headers: {
+        'Authorization': process.env.NEXT_PUBLIC_DATO_API_KEY_READONLY,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        "query": `
+        query {
+          allCommunities {
+            title
+            id
+            imageUrl
+          }
+        }
+      ` })
+    })
+
+    response = await response.json()
+
+    setCommunities(response.data.allCommunities)
   }, [])
 
   const githubUser = 'eduardobravop'
@@ -84,12 +108,23 @@ export default function Home() {
     const formData = new FormData(e.target)
 
     const community = {
-      id: new Date().toISOString(),
       title: formData.get('title'),
-      image: formData.get('image')
+      image_url: formData.get('image')
     }
 
-    setCommunities(oldCommunities => [...oldCommunities, community])
+    fetch('/api/comunidades', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(community)
+    })
+      .then(async response => {
+        const dados = await response.json()
+
+        setCommunities(oldCommunities => [...oldCommunities, dados.registroCriado])
+      })
+
   }
 
   return (
@@ -147,7 +182,7 @@ export default function Home() {
                 return (
                   <li key={itemAtual.id}>
                     <a href={`/communities/${itemAtual.id}`}>
-                      <img src={`https://picsum.photos/102/102/?${itemAtual.id}`} />
+                      <img src={itemAtual.imageUrl} />
                       <span>{itemAtual.title}</span>
                     </a>
                   </li>
